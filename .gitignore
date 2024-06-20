@@ -1,0 +1,7 @@
+# dependencies
+/Modules
+/Scripts
+
+# setup_files
+*.json
+configs.ps1
