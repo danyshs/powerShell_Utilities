@@ -1,32 +1,26 @@
 # GLOBAL VARIABLES
 
+## EXAMPLES
 #$global:path_steam = "E:/Steam/config/config.vdf"
 
 #$global:urlAliases = @{
-## EXAMPLES
 #    "ds1" = "https://danyshs.work/"
 #    "ds2" = "https://danyshs.work/projects/"
 #}
 
 #$global:priorityNames = @('Danysh', 'Alt')
 
-$global:numberToName = [ordered]@{
-    '1' = 'Shani'
-    '2' = 'Sameel'
-    '3' = 'Danysh'
-    '4' = 'Alt'
-    '5' = 'Lily'
-    '6' = 'Eru'
-}
+#$global:numberToName = [ordered]@{
+#    '1' = 'Alt1'
+#    '2' = 'MyName'
+#    '3' = 'Alt2'
+#}
 
-$global:KeyToName = @{
-    '143591310' = 'Shani' 
-    '241282415' = 'Sameel'
-    '80544351'= 'Danysh'
-    '1015988717' = 'Alt' 
-    '109813999' = 'Lily' 
-    '406544619' = 'Eru'  
-}
+#$global:KeyToName = @{
+#    '102983093'= 'MyName'
+#    '12319584' = 'Alt1' 
+#    '1403290' = 'Alt2' 
+#}
 
 $global:approved_formats = @(
 ############################################################
@@ -131,10 +125,5 @@ Set-Alias -Name gitpc -Value gitpushcommentfunc
 Set-Alias -Name aex -Value aliased_explorerLaunch
 Set-Alias -Name ex -Value explorerLaunch 
 
-
-
-
-#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module
-
 Import-Module -Name Microsoft.WinGet.CommandNotFound
-#f45873b3-b655-43a6-b217-97c00aa0db58
+
