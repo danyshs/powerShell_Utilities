@@ -1,76 +1,77 @@
 function Display-Tree {
-    param (
-        [string]$currentPath,
-        [string]$indent = "",
-        [switch]$all,
-        [switch]$nall,
-        [string]$find,
-        [switch]$nofile,
-        [switch]$nalias,
-        [switch]$help
-    )
+  param (
+    [string]$currentPath,
+    [string]$indent = "",
+    [switch]$all,
+    [switch]$nall,
+    [string]$find,
+    [switch]$nofile,
+    [switch]$nalias,
+    [switch]$help
+  )
 
-    # Get directories and files in the current path
-    $directories = Get-ChildItem -Path $currentPath -Directory
+  # Get directories and files in the current path
+  $directories = Get-ChildItem -Path $currentPath -Directory
 
-    if($find){
-        if($find){
-            $files = Get-ChildItem -Path $currentPath -File -Recurse | Where-Object { $_.Name -match $find }
-        }
+  if ($find) {
+    if ($find) {
+      $files = Get-ChildItem -Path $currentPath -File -Recurse | Where-Object { $_.Name -match $find }
     }
-    else{$files = Get-ChildItem -Path $currentPath -File | Where-Object {
-        if($all){$true}
-        if($nall){$_.Extension -notin $approved_formats}
-        else{$_.Extension -in $approved_formats}
+  }
+  else {
+    $files = Get-ChildItem -Path $currentPath -File | Where-Object {
+      if ($all) { $true }
+      if ($nall) { $_.Extension -notin $approved_formats }
+      else { $_.Extension -in $approved_formats }
     }
-    }
+  }
 
-    # Display directories
-    foreach ($dir in $directories) {
+  # Display directories
+  foreach ($dir in $directories) {
     $subFiles = Get-ChildItem -Path $dir.FullName -File -Recurse | Where-Object { $_.Name -match $find }
-        if($subFiles.Count -gt 0){
-            Write-Host "$indent| " -NoNewline -ForegroundColor Magenta
-            Write-Host $dir.Name -ForegroundColor Cyan
-            Display-Tree -currentPath $dir.FullName -indent "$indent-" -all:$all -nall:$nall -find:$find -nofile:$nofile
-        }
+    if ($subFiles.Count -gt 0) {
+      Write-Host "$indent| " -NoNewline -ForegroundColor Magenta
+      Write-Host $dir.Name -ForegroundColor Cyan
+      Display-Tree -currentPath $dir.FullName -indent "$indent-" -all:$all -nall:$nall -find:$find -nofile:$nofile
     }
+  }
 
-    # Display files
-    if (-not $nofile){
-        foreach ($file in $files) {
-            if ($file.DirectoryName -eq $currentPath) {
-                Write-Host "$indent|= " -NoNewline -ForegroundColor DarkMagenta
-                Write-Host $file.Name -ForegroundColor Green
-            }
-        }
+  # Display files
+  if (-not $nofile) {
+    foreach ($file in $files) {
+      if ($file.DirectoryName -eq $currentPath) {
+        Write-Host "$indent|= " -NoNewline -ForegroundColor DarkMagenta
+        Write-Host $file.Name -ForegroundColor Green
+      }
     }
+  }
 }
 
 function Show-TreeWithColor {
-    param (
-        [string]$curPath = ".",
-        [switch]$list,
-        [switch]$all,
-        [switch]$nall,
-        [string]$find,
-        [switch]$nofile,
-        [switch]$nalias,
-        [switch]$help
-    )
+  param (
+    [string]$curPath = ".",
+    [switch]$list,
+    [switch]$all,
+    [switch]$nall,
+    [string]$find,
+    [switch]$nofile,
+    [switch]$nalias,
+    [switch]$help
+  )
 
-    if (-not $nalias) {
-        $alias = Get-Alias -Name $curPath -ErrorAction SilentlyContinue
-        if ($null -ne $alias) {
-            $curPath = $alias.Definition
-        }
-        elseif (-not (Test-Path $curPath)) {
-            Write-Host "Path not found: $curPath" -ForegroundColor Red
-            return
-        }
+  if (-not $nalias) {
+    $alias = Get-Alias -Name $curPath -ErrorAction SilentlyContinue
+    if ($null -ne $alias) {
+      $curPath = $alias.Definition
     }
+    elseif (-not (Test-Path $curPath)) {
+      Write-Host "Path not found: $curPath" -ForegroundColor Red
+      return
+    }
+  }
 
-    if ($help) {
-        Write-Host @"
+  if ($help) {
+    Write-Host @"
 Show-TreeWithColor Parameters:
   -path: The path to start the tree from. Default is the current directory.
   -list: List the FINDSTR functions.
@@ -82,11 +83,11 @@ Show-TreeWithColor Parameters:
   -help: If present, display this help message and do nothing else.
 
 "@
-        return
-    }
-    if ($list) {
-        Write-Host "List of FINDSTR Functions:" -ForegroundColor Yellow
-Write-Host @"
+    return
+  }
+  if ($list) {
+    Write-Host "List of FINDSTR Functions:" -ForegroundColor Yellow
+    Write-Host @"
 FINDSTR Functions:
   Syntax: FINDSTR string(s) [pathname(s)] [options]
 
@@ -133,9 +134,9 @@ FINDSTR Functions:
   |:                Acts as an OR operator.
   ():               Groups characters or expressions together.
 "@ -ForegroundColor White
-    }
-    else{
-        Write-Host $path -ForegroundColor Yellow
-        Display-Tree -currentPath $curPath -all:$all -nall:$nall -find:$find -nofile:$nofile
-    }
+  }
+  else {
+    Write-Host $path -ForegroundColor Yellow
+    Display-Tree -currentPath $curPath -all:$all -nall:$nall -find:$find -nofile:$nofile
+  }
 }
