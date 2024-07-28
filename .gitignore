@@ -4,4 +4,6 @@
 
 # setup_files
 *.json
+secrets.ps1
 configs.ps1
+

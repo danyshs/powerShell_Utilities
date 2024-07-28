@@ -1,4 +1,5 @@
 # GLOBAL VARIABLES
+Set-Variable XDG_CONFIG_HOME=C:\Users\danys\.config
 
 ## EXAMPLES
 #$global:path_steam = "E:/Steam/config/config.vdf"
@@ -54,9 +55,9 @@ Import-Module PSReadLine
 function cd... { Set-Location ..\.. }
 function cd.... { Set-Location ..\..\.. }
 
-function ds_gitRefresh {
+<#function ds_gitRefresh {
   gitrefresh -sourceAlias "dsgl" -destinationAlias "dsgh" -sourceRepoName "nextjs-portfolio-pageview-counter" -destinationRepoName "danyshs_work" -dkey $global:my_github_key
-}
+}#>
 
 function cdto {
 
@@ -87,6 +88,23 @@ function acode {
     "Couldnt open VSCode to $mypath ;w;"
   }
 }
+
+function anvim {
+
+  param(
+    [string]$mypath
+  )
+  $mypath = (Get-Alias -Name $mypath).Definition
+
+  if (Test-Path $mypath) {
+    cd $mypath
+    nvim
+  }
+  else {
+    "Couldnt open VSCode to $mypath ;w;"
+  }
+}
+
 function screenRotate {
   param (
     [string] $state = "u",
@@ -261,6 +279,7 @@ function Format-Text {
     }
   }
 }
+
 function testfunc {
   param(
     [Parameter(Mandatory = $true)]
@@ -284,22 +303,28 @@ function testfunc {
   $text = $result.Groups[1].Value
   Write-Host "`n PREPROCESSED TEXT ========================== `n $text `n=============================="
 
-  
-  
-  $text = $text -creplace '### (.*?)$', "`e[32m`$1`e[0m"     # Header 3 -> Green
+  # Remove specific HTML Unicode escape sequences
+  $unicodeSequences = @("u003c", "u003e", "u002f")
+  foreach ($sequence in $unicodeSequences) {
+    $text = $text -replace "\\$sequence", ""
+  }
 
-  $text = $text -creplace '## (.*?)$', "`e[1;36m`$1`e[0m"     # Header 2 -> Cyan (bold)
+  $text = $text -creplace '###\s(.*?)$', "`e[32m`$1`e[0m"     # Header 3 -> Green
 
-  $text = $text -creplace '# (.*?)$', "`e[1;35m`$1`e[0m"    # Header 1 -> Magenta (bold)
+  $text = $text -creplace '##\s(.*?)$', "`e[1;36m`$1`e[0m"     # Header 2 -> Cyan (bold)
 
-  $text = $text -creplace '\*\*(.*?)\*\*', "`e[32;1m`$1`e[0m"    # Double-asterisk -> Green
+  $text = $text -creplace '#\s(.*?)$', "`e[1;35m`$1`e[0m"    # Header 1 -> Magenta (bold)
 
-  $text = $text -creplace '\*(.*?)\*', "`e[3m`$1`e[0m"           # Italic
-  $text = $text -creplace '_([^_]+)_', "`e[4m`$1`e[0m"           # Underline
-  $text = $text -creplace '~~(.*?)~~', "`e[9m`$1`e[0m"           # Strikethrough
-  $text = $text -creplace '\[blue\](.*?)\[/blue\]', "`e[34m`$1`e[0m"   # Blue Color
-  $text = $text -creplace '\[big\](.*?)\[/big\]', "`e[1m`$1`e[0m"     # Big Text
-  $text = $text -creplace '\[small\](.*?)\[/small\]', "`e[2m`$1`e[0m" # Small Text
+  # Double-asterisk -> Green (excluding cases with * followed by whitespace)
+  $text = $text -creplace '(?<![\*\s])\*\*(?!.*`n|\s)(.*?)\*\*(?![\*\s])', "`e[32;1m`$1`e[0m"
+
+  # Italic (excluding cases with * followed by whitespace)
+  $text = $text -creplace '(?<!\*)\*(?!.*`n|\s)(.*?)\*(?!\*)', "`e[3m`$1`e[0m"
+  $text = $text -creplace '(?<!_)_(?!.*`n)([^_]+)_(?!_)', "`e[4m`$1`e[0m"           # Underline
+  $text = $text -creplace '(?<!~)~~(?!.*`n)(.*?)~~(?!~)', "`e[9m`$1`e[0m"           # Strikethrough
+  $text = $text -creplace '\[blue\](?!.*`n)(.*?)\[/blue\]', "`e[34m`$1`e[0m"   # Blue Color
+  $text = $text -creplace '\[big\](?!.*`n)(.*?)\[/big\]', "`e[1m`$1`e[0m"     # Big Text
+  $text = $text -creplace '\[small\](?!.*`n)(.*?)\[/small\]', "`e[2m`$1`e[0m" # Small Text
   
   # Write-Host "`n BOLDED ========================== `n $text `n=============================="
 
@@ -317,10 +342,80 @@ function testfunc {
   Write-Host "`n`n"
   Write-Host "$text"
   
-  # Write-Host "`n NEWLINED AND FINAL========================== `n $text `n=============================="
-  
-
 }
+  # Write-Host "`n NEWLINED AND FINAL========================== `n $text `n=============================="
+
+function touch {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, Position = 0, ValueFromRemainingArguments)]
+        [string[]]$PathsAndContent
+    )
+    $currentPath = $null
+    $content = $null
+
+    foreach ($item in $PathsAndContent) {
+        if ($item.EndsWith('/') -or $item.EndsWith('\')) {
+            # It's a directory
+            $dirPath = $item.TrimEnd('/\')
+            if (Test-Path -Path $dirPath -PathType Leaf) {
+                Write-Error "Cannot create directory '$item'. A file with the same name already exists."
+                return
+            }
+            if (!(Test-Path -Path $dirPath)) {
+                New-Item -Path $dirPath -ItemType Directory | Out-Null
+                Write-Host "Directory '$item' created."
+            }
+            $currentPath = $null
+            $content = $null
+        }
+        elseif ($null -eq $currentPath) {
+            # It's a file path
+            if (Test-Path -Path "$item/" -PathType Container) {
+                Write-Error "Cannot create file '$item'. A directory with the same name already exists."
+                return
+            }
+            $currentPath = $item
+        }
+        else {
+            # It's content for the current file
+            $content = $item
+        }
+
+        if ($currentPath -and $content) {
+            if (Test-Path -Path $currentPath -PathType Container) {
+                Write-Error "Cannot add content to a directory: $currentPath"
+                return
+            }
+
+            if (!(Test-Path -Path $currentPath)) {
+                New-Item -Path $currentPath -ItemType File | Out-Null
+                Write-Host "File '$currentPath' created."
+            }
+
+            Add-Content -Path $currentPath -Value $content
+            Write-Host "Content appended to file '$currentPath'."
+
+            $currentPath = $null
+            $content = $null
+        }
+    }
+
+    # Only a file path is provided -> create empty file
+    if ($currentPath -and !$content) {
+        if (Test-Path -Path "$currentPath/" -PathType Container) {
+            Write-Error "Cannot create file '$currentPath'. A directory with the same name already exists."
+            return
+        }
+        if (!(Test-Path -Path $currentPath)) {
+            New-Item -Path $currentPath -ItemType File | Out-Null
+            Write-Host "File '$currentPath' created."
+        }
+    }
+}
+
+function run {. -Path ($args[0])}
+
 <#
 function Test2Func {
   $text = @"
@@ -355,12 +450,13 @@ Set-Alias -Name rotate -Value screenRotate
 Set-Alias -Name tree -Value Show-TreeWithColor
 Set-Alias -Name steam -Value Start-Steam
 Set-Alias -Name settings -Value Start-Settings
-Set-Alias -Name nsettings -Value Start-nSettings
 Set-Alias -Name opera -Value Start-Opera
 Set-Alias -Name discord -Value Start-Discord
 Set-Alias -Name spotify -Value Start-Spotify
 Set-Alias -Name avengers -Value Open-MultipleOperaUrls
 Set-Alias -Name dsweb -Value Start-Website_Editing
+Set-Alias -Name godot -Value Start-Godot
+Set-Alias -Name wsettings -Value Start-Wezterm-Config
 Set-Alias -Name sfs -Value my_Sfs_Select
 Set-Alias -Name gita -Value gitadd
 Set-Alias -Name gitc -Value gitcommit
@@ -369,7 +465,6 @@ Set-Alias -Name gitac -Value gitaddcommentfunc
 Set-Alias -Name gitpc -Value gitpushcommentfunc
 Set-Alias -Name aex -Value aliased_explorerLaunch
 Set-Alias -Name ex -Value explorerLaunch 
-
 <# 
 Set-Alias -Name pwshcus -Value C:\Users\danys\Documents\PowerShell\Custom
 Set-Alias -Name pwshhome -Value C:\Users\danys\Documents\PowerShell
