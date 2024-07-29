@@ -8,7 +8,9 @@ function Start-cSettings {
 function Start-nSettings {
   notepad.exe $PROFILE
 }
-
+function Start-Config {
+  nvim "C:\Users\danys\Documents\PowerShell\Custom\configs.ps1"
+}
 function Start-Sfs-Select {
   Stop-Process -Name "steam" -ErrorAction SilentlyContinue
   Start-Process "E:\Drivers\Sfs Select\sfs-select\windows\sfs-select.exe"

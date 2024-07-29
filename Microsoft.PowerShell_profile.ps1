@@ -458,6 +458,7 @@ Set-Alias -Name rotate -Value screenRotate
 Set-Alias -Name tree -Value Show-TreeWithColor
 Set-Alias -Name steam -Value Start-Steam
 Set-Alias -Name settings -Value Start-Settings
+Set-Alias -Name config -Value Start-Config 
 Set-Alias -Name opera -Value Start-Opera
 Set-Alias -Name discord -Value Start-Discord
 Set-Alias -Name spotify -Value Start-Spotify
