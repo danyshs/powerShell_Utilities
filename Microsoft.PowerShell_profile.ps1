@@ -414,7 +414,15 @@ function touch {
     }
 }
 
+function where! {
+    Get-Command $args[0] | Select-Object -ExpandProperty Source
+}
+function whereis{
+    Get-Command $args[0] | Select-Object -ExpandProperty Source
+}
+
 function run {. -Path ($args[0])}
+
 
 <#
 function Test2Func {
